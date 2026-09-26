@@ -128,7 +128,7 @@ func (c *CosignerProvider) RequestToken(ctx context.Context, signer crypto.Signe
 	}
 	go func() {
 		err := server.Serve(listener)
-		if err != nil && errors.Is(err, http.ErrServerClosed) {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			select {
 			case errCh <- fmt.Errorf("cosigner callback server failed: %w", err):
 			case <-ctx.Done():
@@ -153,7 +153,7 @@ func (c *CosignerProvider) RequestToken(ctx context.Context, signer crypto.Signe
 		return nil, fmt.Errorf("cosigner client hit error init auth signed message: %w", err)
 	}
 
-	redirUri, err := c.initAuthURI(sig1, pktJson)
+	redirUri, err := c.initAuthURI(pktJson, sig1)
 	if err != nil {
 		return nil, fmt.Errorf("cosigner client hit error when building init auth URI: %w", err)
 	}
@@ -178,7 +178,7 @@ func (c *CosignerProvider) RequestToken(ctx context.Context, signer crypto.Signe
 	case err := <-errCh:
 		return nil, err
 	case <-ctx.Done():
-		return pkt, nil
+		return nil, ctx.Err()
 	}
 }
 
