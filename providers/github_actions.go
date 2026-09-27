@@ -98,7 +98,7 @@ func (g *GithubOp) requestTokens(ctx context.Context, cicHash string) (*memguard
 		return memguard.NewBufferFromBytes(tokens.IDToken), nil
 	}
 
-	tokenURL, err := buildTokenURL(cicHash, g.rawTokenRequestURL)
+	tokenURL, err := buildTokenURL(g.rawTokenRequestURL, cicHash)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (g *GithubOp) requestTokens(ctx context.Context, cicHash string) (*memguard
 		return nil, err
 	}
 
-	request.Header.Set("Authorization", g.tokenRequestAuthToken)
+	request.Header.Set("Authorization", "Bearer "+g.tokenRequestAuthToken)
 
 	var httpClient http.Client
 	response, err := httpClient.Do(request)
@@ -117,7 +117,7 @@ func (g *GithubOp) requestTokens(ctx context.Context, cicHash string) (*memguard
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode == http.StatusOK {
+	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("received non-200 from jwt api: %s", http.StatusText(response.StatusCode))
 	}
 
@@ -137,7 +137,7 @@ func (g *GithubOp) requestTokens(ctx context.Context, cicHash string) (*memguard
 	defer memguard.WipeBytes([]byte(jwt.Value))
 
 	// json.RawMessage leaves the " (quotes) on the string. We need to remove the quotes
-	return memguard.NewBufferFromBytes(jwt.Value[0 : len(jwt.Value)-1]), nil
+	return memguard.NewBufferFromBytes(jwt.Value[1 : len(jwt.Value)-1]), nil
 }
 
 func (g *GithubOp) RequestTokens(ctx context.Context, cic *clientinstance.Claims) (*simpleoidc.Tokens, error) {
