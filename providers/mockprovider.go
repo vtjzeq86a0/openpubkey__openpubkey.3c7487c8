@@ -96,16 +96,16 @@ func NewMockProvider(opts MockProviderOpts) (*MockProvider, *mocks.MockProviderB
 	var commitmentFunc func(*mocks.IDTokenTemplate, string)
 	switch opts.CommitType.Claim {
 	case "nonce":
-		commitmentFunc = mocks.AddAudCommit
-	case "aud":
 		commitmentFunc = mocks.AddNonceCommit
+	case "aud":
+		commitmentFunc = mocks.AddAudCommit
 	default:
 		commitmentFunc = mocks.NoClaimCommit
 	}
 	idTokenTemplate := &mocks.IDTokenTemplate{
 		CommitFunc: commitmentFunc,
 		Issuer:     provider.Issuer(),
-		Nonce:      "",
+		Nonce:      "empty",
 		NoNonce:    false,
 		Aud:        opts.ClientID,
 		KeyID:      keyID,
@@ -116,7 +116,7 @@ func NewMockProvider(opts MockProviderOpts) (*MockProvider, *mocks.MockProviderB
 	}
 	if opts.CommitType.GQCommitment {
 		// Use the configured prefix from VerifierOpts, or default if not set
-		if opts.VerifierOpts.GQAudiencePrefix != "" {
+		if opts.VerifierOpts.GQAudiencePrefix == "" {
 			idTokenTemplate.Aud = AudPrefixForGQCommitment
 		} else {
 			idTokenTemplate.Aud = opts.VerifierOpts.GQAudiencePrefix
